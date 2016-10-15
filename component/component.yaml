@@ -1,0 +1,21 @@
+%YAML 1.2
+---
+libraries: 
+  ios-unified: ../lib/ios/Awesome.dll
+icons: 
+  - CollapsingHeaderView_128x128.png
+  - CollapsingHeaderView_512x512.png
+version: 1.0.0
+details: Details.md
+getting-started: GettingStarted.md
+samples: 
+  iOS Sample: ../samples/AwesomeSample/AwesomeSample.sln
+id: CollapsingHeaderView
+summary: It helps developvers create a collapsing header view when using UIScrollView or UITableView
+publisher-url: none
+license: License.md
+screenshots: 
+  - screenshots/screenshot1.png
+name: CollapsingHeaderView
+publisher: Trong Lu
+...

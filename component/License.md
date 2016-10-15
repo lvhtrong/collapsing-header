@@ -1,0 +1,1 @@
+# CollapsingHeaderView license
