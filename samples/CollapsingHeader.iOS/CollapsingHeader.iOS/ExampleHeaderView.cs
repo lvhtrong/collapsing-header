@@ -9,6 +9,14 @@ namespace CollapsingHeader
     [Register("ExampleHeaderView")]
     public class ExampleHeaderView : HeaderView
     {
+        public override int MinHeight
+        {
+            get
+            {
+                return 50;
+            }
+        }
+
         public ExampleHeaderView()
         {
             Initializer();
@@ -23,6 +31,7 @@ namespace CollapsingHeader
         private void Initializer()
         {
             LoadNib();
+            InitViews();
         }
 
         private void LoadNib()
@@ -38,5 +47,10 @@ namespace CollapsingHeader
                 NSLayoutConstraint.Create(v, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal, this, NSLayoutAttribute.Trailing, 1, 0),
             });
         }
-   }
+
+        private void InitViews()
+        {
+            AddConstraint(NSLayoutConstraint.Create(this, NSLayoutAttribute.Height, NSLayoutRelation.Equal, 1, 100));
+        }
+    }
 }

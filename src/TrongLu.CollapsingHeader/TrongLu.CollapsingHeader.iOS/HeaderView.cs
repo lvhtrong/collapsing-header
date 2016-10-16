@@ -4,25 +4,27 @@ using UIKit;
 
 namespace TrongLu.CollapsingHeader
 {
-    public class HeaderView : UIView, ICollapsable, IExpandable
+    public abstract class HeaderView : UIView, IHeaderView
     {
-        protected virtual float MinHeight
+        public virtual int MinHeight
         {
             get
             {
-                return 50;
+                return 0;
             }
         }
 
-        protected virtual float MaxHeight
+        private int _maxHeight = -1;
+
+        public virtual int MaxHeight
         {
             get
             {
-                return 200;
+                return _maxHeight;
             }
         }
 
-        public virtual bool Collapsable
+        public virtual bool Collapsible
         {
             get
             {
@@ -38,13 +40,25 @@ namespace TrongLu.CollapsingHeader
             }
         }
 
-        public HeaderView()
+        protected HeaderView()
         {
+            Initialize();
         }
 
-        public HeaderView(IntPtr handle)
+        protected HeaderView(IntPtr handle)
             : base(handle)
         {
+            Initialize();
+        }
+
+        private void Initialize()
+        {
+            AddConstraint(NSLayoutConstraint.Create(this, NSLayoutAttribute.Height, NSLayoutRelation.GreaterThanOrEqual, 1, MinHeight));
+        }
+
+        internal void SetMaxHeight(int value)
+        {
+            _maxHeight = value;
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System;
 namespace TrongLu.CollapsingHeader.Interfaces
 {
-    public interface ICollapsable
+    public interface ICollapsible
     {
-        bool Collapsable { get; }
+        bool Collapsible { get; }
     }
 }
