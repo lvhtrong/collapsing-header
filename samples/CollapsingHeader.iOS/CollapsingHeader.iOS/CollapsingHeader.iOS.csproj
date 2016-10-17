@@ -99,6 +99,7 @@
   <ItemGroup>
     <InterfaceDefinition Include="LaunchScreen.storyboard" />
     <InterfaceDefinition Include="Main.storyboard" />
+    <InterfaceDefinition Include="ExampleHeaderView.xib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -111,6 +112,8 @@
     <Compile Include="ViewController.designer.cs">
       <DependentUpon>ViewController.cs</DependentUpon>
     </Compile>
+    <Compile Include="ExampleHeaderView.cs" />
+    <Compile Include="CollapsingViewSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\TrongLu.CollapsingHeader\TrongLu.CollapsingHeader.iOS\TrongLu.CollapsingHeader.iOS.csproj">
