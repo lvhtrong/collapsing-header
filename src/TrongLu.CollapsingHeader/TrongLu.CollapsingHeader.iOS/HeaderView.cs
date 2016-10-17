@@ -4,7 +4,7 @@ using UIKit;
 
 namespace TrongLu.CollapsingHeader
 {
-    public abstract class HeaderView : UIView, IHeaderView
+    public abstract class HeaderView : UIView, ICollapsible, IExpandable
     {
         public virtual int MinHeight
         {

@@ -9,47 +9,37 @@ namespace TrongLu.CollapsingHeader
     {
         private bool _isFirstTime = true;
         private nfloat _lastDraggingOffset;
-        private CollapsingHeaderViewDelegate _delegate;
         private NSLayoutConstraint _contentTopConstraint;
 
-        private HeaderView _headerView;
-
-        public HeaderView HeaderView
+        internal HeaderView HeaderView
         {
-            get { return _headerView; }
-            set
-            {
-                if (_headerView != null && _headerView.Superview != null)
-                {
-                    _headerView.RemoveFromSuperview();
-                    _headerView.Dispose();
-                    _headerView = null;
-                }
-                _headerView = value;
-            }
+            get { return Source.HeaderView; }
         }
 
-        private UIScrollView _contentView;
-
-        public UIScrollView ContentView
+        internal UIView ResizableView
         {
-            get { return _contentView; }
-            set
-            {
-                if (_contentView != null && _contentView.Superview != null)
-                {
-                    _contentView.RemoveFromSuperview();
-                    _contentView.Dispose();
-                    _contentView = null;
-                }
-                _contentView = value;
-            }
+            get { return Source.ResizableView; }
         }
 
-        public CollapsingHeaderViewDelegate Delegate
+        internal UIScrollView ScrollableView
         {
-            get { return _delegate ?? (_delegate = new CollapsingHeaderViewDelegate()); }
-            set { _delegate = value; }
+            get { return Source.ScrollableView; }
+        }
+
+        private CollapsingHeaderViewSource _source;
+
+        public CollapsingHeaderViewSource Source
+        {
+            get { return _source; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new Exception("Instance of CollapsingHeaderViewSource cannot be null!");
+                }
+                _source = value;
+                Notify();
+            }
         }
 
         public bool OnlyExpandOnTop { get; set; } = false;
@@ -79,7 +69,7 @@ namespace TrongLu.CollapsingHeader
 
         private void InitEvents()
         {
-            ContentView.DraggingStarted += (sender, e) =>
+            ScrollableView.DraggingStarted += (sender, e) =>
             {
                 if (_isFirstTime)
                 {
@@ -88,27 +78,27 @@ namespace TrongLu.CollapsingHeader
                     ResetContentViewTopConstraint();
                 }
 
-                _lastDraggingOffset = (nfloat)Math.Max(ContentView.ContentOffset.Y, 0f);
+                _lastDraggingOffset = (nfloat)Math.Max(ScrollableView.ContentOffset.Y, 0f);
             };
-            ContentView.Scrolled += (sender, e) => OnContentViewScrolled();
+            ScrollableView.Scrolled += (sender, e) => OnContentViewScrolled();
         }
 
         private void ResetContentViewTopConstraint()
         {
-            var top = (nfloat)Math.Max(ContentView.Frame.Y, HeaderView.MaxHeight);
+            var top = (nfloat)Math.Max(ScrollableView.Frame.Y, HeaderView.MaxHeight);
 
             if (_contentTopConstraint != null)
             {
                 RemoveConstraint(_contentTopConstraint);
             }
 
-            _contentTopConstraint = NSLayoutConstraint.Create(ContentView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, this, NSLayoutAttribute.Top, 1, top);
+            _contentTopConstraint = NSLayoutConstraint.Create(ResizableView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, this, NSLayoutAttribute.Top, 1, top);
             AddConstraint(_contentTopConstraint);
         }
 
         private void OnContentViewScrolled()
         {
-            var contentOffset = ContentView.ContentOffset;
+            var contentOffset = ScrollableView.ContentOffset;
             var distance = contentOffset.Y - _lastDraggingOffset;
 
             if (HeaderView.Collapsible)
@@ -123,8 +113,9 @@ namespace TrongLu.CollapsingHeader
                     {
                         _contentTopConstraint.Constant -= distance;
                     }
+                    Source.HeaderHeightChanged(_contentTopConstraint.Constant);
                     contentOffset.Y = _lastDraggingOffset;
-                    ContentView.ContentOffset = contentOffset;
+                    ScrollableView.ContentOffset = contentOffset;
                 }
             }
             if (HeaderView.Expandable)
@@ -135,6 +126,7 @@ namespace TrongLu.CollapsingHeader
                     {
                         _contentTopConstraint.Constant -= distance;
                         contentOffset.Y = _lastDraggingOffset;
+                        Source.HeaderHeightChanged(_contentTopConstraint.Constant);
                     }
                 }
                 else
@@ -143,9 +135,10 @@ namespace TrongLu.CollapsingHeader
                     {
                         _contentTopConstraint.Constant -= contentOffset.Y;
                         contentOffset.Y = 0;
+                        Source.HeaderHeightChanged(_contentTopConstraint.Constant);
                     }
                 }
-                ContentView.ContentOffset = contentOffset;
+                ScrollableView.ContentOffset = contentOffset;
             }
         }
 
@@ -168,35 +161,18 @@ namespace TrongLu.CollapsingHeader
 
         private void AddContentView()
         {
-            ContentView.TranslatesAutoresizingMaskIntoConstraints = false;
+            ResizableView.TranslatesAutoresizingMaskIntoConstraints = false;
 
-            AddSubview(ContentView);
-            _contentTopConstraint = NSLayoutConstraint.Create(ContentView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, HeaderView, NSLayoutAttribute.Bottom, 1, 0);
+            AddSubview(ResizableView);
+            _contentTopConstraint = NSLayoutConstraint.Create(ResizableView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, HeaderView, NSLayoutAttribute.Bottom, 1, 0);
             AddConstraints(new NSLayoutConstraint[]
             {
                 _contentTopConstraint,
-                NSLayoutConstraint.Create(ContentView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, HeaderView, NSLayoutAttribute.Bottom, 1, 0),
-                NSLayoutConstraint.Create(ContentView, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, HeaderView, NSLayoutAttribute.Leading, 1, 0),
-                NSLayoutConstraint.Create(ContentView, NSLayoutAttribute.Right, NSLayoutRelation.Equal, HeaderView, NSLayoutAttribute.Right, 1, 0),
-                NSLayoutConstraint.Create(ContentView, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, this, NSLayoutAttribute.Bottom, 1, 0)
+                NSLayoutConstraint.Create(ResizableView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, HeaderView, NSLayoutAttribute.Bottom, 1, 0),
+                NSLayoutConstraint.Create(ResizableView, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, HeaderView, NSLayoutAttribute.Leading, 1, 0),
+                NSLayoutConstraint.Create(ResizableView, NSLayoutAttribute.Right, NSLayoutRelation.Equal, HeaderView, NSLayoutAttribute.Right, 1, 0),
+                NSLayoutConstraint.Create(ResizableView, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, this, NSLayoutAttribute.Bottom, 1, 0)
             });
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (HeaderView != null)
-            {
-                HeaderView.Dispose();
-                HeaderView = null;
-            }
-
-            if (ContentView != null)
-            {
-                ContentView.Dispose();
-                ContentView = null;
-            }
-
-            base.Dispose(disposing);
         }
     }
 }

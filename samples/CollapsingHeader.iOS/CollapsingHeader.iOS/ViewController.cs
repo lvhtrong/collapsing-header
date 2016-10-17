@@ -14,9 +14,9 @@ namespace CollapsingHeader
         {
             base.ViewDidLoad();
 
-            collaspingHeaderView.HeaderView = collapsingHeader;
-            collaspingHeaderView.ContentView = collapsingContent;
-            collaspingHeaderView.Notify();
+            var collapsingViewSource = new CollapsingViewSource(collapsingHeader, collapsingContent);
+            collaspingHeaderView.Source = collapsingViewSource;
+            collaspingHeaderView.OnlyExpandOnTop = true;
         }
     }
 }

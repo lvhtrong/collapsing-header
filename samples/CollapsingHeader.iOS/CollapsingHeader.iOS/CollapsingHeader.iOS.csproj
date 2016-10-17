@@ -113,6 +113,7 @@
       <DependentUpon>ViewController.cs</DependentUpon>
     </Compile>
     <Compile Include="ExampleHeaderView.cs" />
+    <Compile Include="CollapsingViewSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\TrongLu.CollapsingHeader\TrongLu.CollapsingHeader.iOS\TrongLu.CollapsingHeader.iOS.csproj">
