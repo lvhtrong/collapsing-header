@@ -8,7 +8,9 @@ namespace TrongLu.CollapsingHeader
     public class CollapsingHeaderView : UIView
     {
         private bool _isFirstTime = true;
+        private bool _expandEnabled;
         private nfloat _lastDraggingOffset;
+        private nfloat _startDraggingOffset;
         private NSLayoutConstraint _contentTopConstraint;
 
         internal HeaderView HeaderView
@@ -44,6 +46,8 @@ namespace TrongLu.CollapsingHeader
 
         public bool OnlyExpandOnTop { get; set; } = false;
 
+        public uint ExpandOffset { get; set; } = 0;
+
         public CollapsingHeaderView()
         {
             Initialize();
@@ -78,7 +82,7 @@ namespace TrongLu.CollapsingHeader
                     ResetContentViewTopConstraint();
                 }
 
-                _lastDraggingOffset = (nfloat)Math.Max(ScrollableView.ContentOffset.Y, 0f);
+                _lastDraggingOffset = _startDraggingOffset = (nfloat)Math.Max(ScrollableView.ContentOffset.Y, 0f);
             };
             ScrollableView.Scrolled += (sender, e) => OnContentViewScrolled();
         }
@@ -100,10 +104,11 @@ namespace TrongLu.CollapsingHeader
         {
             var contentOffset = ScrollableView.ContentOffset;
             var distance = contentOffset.Y - _lastDraggingOffset;
+            var distanceFromStart = contentOffset.Y - _startDraggingOffset;
 
-            if (HeaderView.Collapsible)
+            if (distance > 0)
             {
-                if (distance > 0)
+                if (HeaderView.Collapsible && _lastDraggingOffset > 0)
                 {
                     if (_contentTopConstraint.Constant - distance < HeaderView.MinHeight)
                     {
@@ -114,15 +119,21 @@ namespace TrongLu.CollapsingHeader
                         _contentTopConstraint.Constant -= distance;
                     }
                     Source.HeaderHeightChanged(_contentTopConstraint.Constant);
-                    contentOffset.Y = _lastDraggingOffset;
+                    contentOffset.Y = _startDraggingOffset;
                     ScrollableView.ContentOffset = contentOffset;
+                    _expandEnabled = false;
                 }
             }
-            if (HeaderView.Expandable)
+            else if (HeaderView.Expandable)
             {
                 if (!OnlyExpandOnTop)
                 {
-                    if (distance < 0)
+                    if (distanceFromStart < -ExpandOffset)
+                    {
+                        _expandEnabled = true;
+                    }
+
+                    if (distance < 0 && _expandEnabled)
                     {
                         _contentTopConstraint.Constant -= distance;
                         contentOffset.Y = _lastDraggingOffset;
@@ -140,6 +151,7 @@ namespace TrongLu.CollapsingHeader
                 }
                 ScrollableView.ContentOffset = contentOffset;
             }
+            _lastDraggingOffset = contentOffset.Y;
         }
 
         private void AddHeaderView()
