@@ -73,18 +73,42 @@ namespace TrongLu.CollapsingHeader
 
         private void InitEvents()
         {
-            ScrollableView.DraggingStarted += (sender, e) =>
-            {
-                if (_isFirstTime)
-                {
-                    _isFirstTime = false;
-                    HeaderView.SetMaxHeight((int)HeaderView.Frame.Height);
-                    ResetContentViewTopConstraint();
-                }
+            ScrollableView.DraggingStarted += OnScrollableViewDraggingStarted;
+            ScrollableView.DraggingEnded += OnScrollableViewDraggingEnded;
+            ScrollableView.Scrolled += OnContentViewScrolled;
+        }
 
-                _lastDraggingOffset = _startDraggingOffset = (nfloat)Math.Max(ScrollableView.ContentOffset.Y, 0f);
-            };
-            ScrollableView.Scrolled += (sender, e) => OnContentViewScrolled();
+        private void OnScrollableViewDraggingEnded(object sender, DraggingEventArgs e)
+        {
+            if (e.Decelerate)
+            {
+                return;
+            }
+
+            if (HeaderView.Frame.Height < HeaderView.MaxHeight && HeaderView.Frame.Height > HeaderView.MinHeight)
+            {
+                if (HeaderView.Frame.Height < (HeaderView.MaxHeight + HeaderView.MinHeight) / 2f)
+                {
+                    _contentTopConstraint.Constant = HeaderView.MinHeight;
+                }
+                else
+                {
+                    _contentTopConstraint.Constant = HeaderView.MaxHeight;
+                }
+                Animate(0.3, LayoutIfNeeded);
+            }
+        }
+
+        private void OnScrollableViewDraggingStarted(object sender, EventArgs e)
+        {
+            if (_isFirstTime)
+            {
+                _isFirstTime = false;
+                HeaderView.SetMaxHeight((int)HeaderView.Frame.Height);
+                ResetContentViewTopConstraint();
+            }
+
+            _lastDraggingOffset = _startDraggingOffset = (nfloat)Math.Max(ScrollableView.ContentOffset.Y, 0f);
         }
 
         private void ResetContentViewTopConstraint()
@@ -100,7 +124,7 @@ namespace TrongLu.CollapsingHeader
             AddConstraint(_contentTopConstraint);
         }
 
-        private void OnContentViewScrolled()
+        private void OnContentViewScrolled(object sender, EventArgs e)
         {
             var contentOffset = ScrollableView.ContentOffset;
             var distance = contentOffset.Y - _lastDraggingOffset;
