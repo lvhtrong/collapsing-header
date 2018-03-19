@@ -37,9 +37,15 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
+    <Folder Include="Interfaces\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CollapsingHeaderView.cs" />
+    <Compile Include="Interfaces\ICollapsible.cs" />
+    <Compile Include="Interfaces\IExpandable.cs" />
+    <Compile Include="HeaderView.cs" />
+    <Compile Include="CollapsingHeaderViewSource.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
